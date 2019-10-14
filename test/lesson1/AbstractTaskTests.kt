@@ -1,10 +1,12 @@
 package lesson1
 
 import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.assertThrows
 import util.PerfResult
 import util.estimate
 import java.io.BufferedWriter
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.math.abs
 import kotlin.system.measureNanoTime
@@ -42,6 +44,31 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         try {
             sortTimes("input/time_in3.txt", "temp.txt")
             assertFileContent("temp.txt", File("input/time_out3.txt").readLines())
+        } finally {
+            File("temp.txt").delete()
+        }
+
+        try {
+            assertThrows<IllegalArgumentException> { sortTimes("input/time_in4.txt", "temp.txt") }
+
+        } finally {
+            File("temp.txt").delete()
+        }
+        try {
+            assertThrows<IllegalArgumentException> { sortTimes("input/time_in5.txt", "temp.txt") }
+
+        } finally {
+            File("temp.txt").delete()
+        }
+        try {
+            assertThrows<IllegalArgumentException> { sortTimes("input/time_in6.txt", "temp.txt") }
+
+        } finally {
+            File("temp.txt").delete()
+        }
+        try {
+            assertThrows<IllegalArgumentException> { sortTimes("input/time_in7.txt", "temp.txt") }
+
         } finally {
             File("temp.txt").delete()
         }

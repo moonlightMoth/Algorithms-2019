@@ -1,6 +1,11 @@
 package lesson1;
 
 import kotlin.NotImplementedError;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.IllegalFormatException;
 
 @SuppressWarnings("unused")
 public class JavaTasks {
@@ -33,9 +38,152 @@ public class JavaTasks {
      * 07:56:14 PM
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
+     *
+     * O(n^2) - insertion sort
      */
-    static public void sortTimes(String inputName, String outputName) {
-        throw new NotImplementedError();
+    static public void sortTimes(String inputName, String outputName)
+    {
+        File file = new File(inputName);
+        ArrayList<String> timeStrings = new ArrayList<>();
+
+        try
+        {
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(file)));
+            String s;
+
+            while ((s = br.readLine()) != null)
+            {
+                timeStrings.add(s);
+            }
+
+            br.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        Time[] times = new Time[timeStrings.size()];
+
+        for (int i = 0; i < timeStrings.size(); i++)
+        {
+            times[i] = new Time(timeStrings.get(i));
+        }
+
+        Sorts.insertionSort(times);
+
+        file = new File(outputName);
+
+        try
+        {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+            for (int i = 0; i < times.length-1; i++)
+            {
+                bw.append(times[i].data);
+                bw.append(System.lineSeparator());
+            }
+            bw.append(times[times.length-1].data);
+            bw.flush();
+            bw.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
+    static class Time implements Comparable
+    {
+        byte h;
+        byte m;
+        byte s;
+        boolean isAM;
+        String data;
+
+        Time(String timeString)
+        {
+            String isAMString;
+            try
+            {
+                isAMString = timeString.substring(timeString.length()-2);
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                throw new IllegalArgumentException();
+            }
+
+            if (isAMString.equals("AM"))
+                isAM = true;
+            else if (isAMString.equals("PM"))
+                isAM = false;
+            else
+                throw new IllegalArgumentException();
+
+            String[] strings = timeString.substring(0, timeString.length()-3).split(":");
+            if (strings.length != 3) throw new IllegalArgumentException();
+
+            try
+            {
+               h = getByte(strings[0]);
+               m = getByte(strings[1]);
+               s = getByte(strings[2]);
+
+            }
+            catch (NumberFormatException e)
+            {
+                throw new IllegalArgumentException();
+            }
+
+            if (h < 1 || h > 12)
+                throw new IllegalArgumentException();
+            if (m < 0 || m > 59)
+                throw new IllegalArgumentException();
+            if (s < 0 || s > 59)
+                throw new IllegalArgumentException();
+
+            data = timeString;
+        }
+
+        private byte getByte(String s) throws NumberFormatException
+        {
+            if (s.length() != 2)
+                throw new NumberFormatException();
+            if (s.charAt(0) == '0' )
+                s = s.substring(1);
+
+            return Byte.parseByte(s);
+        }
+
+        @Override
+        public int compareTo(@NotNull Object o)
+        {
+            Time t = (Time)o;
+
+            if (isAM && !t.isAM)
+                return -1;
+            if (!isAM && t.isAM)
+                return 1;
+
+            if (h > t.h)
+                if (h == 12)
+                    return -1;
+                else
+                    return 1;
+            if (h < t.h)
+                if (t.h == 12)
+                    return 1;
+                else
+                    return -1;
+
+            if (m > t.m)
+                return 1;
+            if (m < t.m)
+                return -1;
+
+            return Byte.compare(s, t.s);
+        }
     }
 
     /**
