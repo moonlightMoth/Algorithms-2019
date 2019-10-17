@@ -6,6 +6,7 @@ import util.PerfResult
 import util.estimate
 import java.io.BufferedWriter
 import java.io.File
+import java.io.IOException
 import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.math.abs
@@ -72,6 +73,12 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         } finally {
             File("temp.txt").delete()
         }
+        try {
+            assertThrows<IOException> { sortTimes("input/time_in8txt", "temp.txt") }
+
+        } finally {
+            File("temp.txt").delete()
+        }
     }
 
     protected fun sortAddresses(sortAddresses: (String, String) -> Unit) {
@@ -97,6 +104,26 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         try {
             sortAddresses("input/addr_in3.txt", "temp.txt")
             assertFileContent("temp.txt", File("input/addr_out3.txt").readLines())
+        } finally {
+            File("temp.txt").delete()
+        }
+        try {
+            assertThrows<IllegalArgumentException> { sortAddresses("input/addr_in4.txt", "temp.txt") }
+        } finally {
+            File("temp.txt").delete()
+        }
+        try {
+            assertThrows<IllegalArgumentException> { sortAddresses("input/addr_in5.txt", "temp.txt") }
+        } finally {
+            File("temp.txt").delete()
+        }
+        try {
+            assertThrows<IllegalArgumentException> { sortAddresses("input/addr_in6.txt", "temp.txt") }
+        } finally {
+            File("temp.txt").delete()
+        }
+        try {
+            assertThrows<IOException> { sortAddresses("input/addr_in7.txt", "temp.txt") }
         } finally {
             File("temp.txt").delete()
         }

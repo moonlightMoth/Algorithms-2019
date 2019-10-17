@@ -4,8 +4,7 @@ import kotlin.NotImplementedError;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.IllegalFormatException;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class JavaTasks {
@@ -41,28 +40,10 @@ public class JavaTasks {
      *
      * O(n^2) - insertion sort
      */
-    static public void sortTimes(String inputName, String outputName)
+    static public void sortTimes(String inputName, String outputName) throws IOException
     {
-        File file = new File(inputName);
-        ArrayList<String> timeStrings = new ArrayList<>();
-
-        try
-        {
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(new FileInputStream(file)));
-            String s;
-
-            while ((s = br.readLine()) != null)
-            {
-                timeStrings.add(s);
-            }
-
-            br.close();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        List<String> timeStrings = getStrings(inputName);
+        File file;
 
         Time[] times = new Time[timeStrings.size()];
 
@@ -75,9 +56,8 @@ public class JavaTasks {
 
         file = new File(outputName);
 
-        try
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file)))
         {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
             for (int i = 0; i < times.length-1; i++)
             {
                 bw.append(times[i].data);
@@ -85,13 +65,28 @@ public class JavaTasks {
             }
             bw.append(times[times.length-1].data);
             bw.flush();
-            bw.close();
         }
-        catch (IOException e)
+    }
+
+    @NotNull
+    private static List<String> getStrings(String inputName) throws IOException
+    {
+        File file = new File(inputName);
+        List<String> timeStrings = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(file))))
         {
-            e.printStackTrace();
+            String s;
+
+            while ((s = br.readLine()) != null)
+            {
+                timeStrings.add(s);
+            }
         }
 
+
+        return timeStrings;
     }
 
     static class Time implements Comparable
@@ -211,9 +206,121 @@ public class JavaTasks {
      * Садовая 5 - Сидоров Петр, Сидорова Мария
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
+     *
+     * O(n*log(n)) - tree sort
      */
-    static public void sortAddresses(String inputName, String outputName) {
-        throw new NotImplementedError();
+    static public void sortAddresses(String inputName, String outputName) throws IOException
+    {
+        Map<Address, List<Name>>  map = new TreeMap<>();
+
+        File file = new File(inputName);
+
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(file))))
+        {
+            String s;
+
+            while ((s = br.readLine()) != null)
+            {
+                String[] strings = s.split(" - ");
+                if (strings.length != 2) throw new IllegalArgumentException();
+                Address a = new Address(strings[1]);
+
+                if (!map.containsKey(a))
+                {
+                    List<Name> as = new ArrayList<>();
+                    as.add(new Name(strings[0]));
+                    map.put(a, as);
+                }
+                else
+                {
+                    map.get(a).add(new Name(strings[0]));
+                    Collections.sort(map.get(a));
+                }
+            }
+        }
+
+
+        file = new File(outputName);
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file)))
+        {
+            for (Map.Entry e : map.entrySet())
+            {
+                bw.append(e.getKey().toString());
+                bw.append(" - ");
+                bw.append(e.getValue().toString().substring(1, e.getValue().toString().length()-1));
+                bw.append(System.lineSeparator());
+            }
+            bw.flush();
+        }
+    }
+
+    static class Name implements Comparable
+    {
+        String name;
+        Name(String s)
+        {
+            if (s.split(" ").length != 2) throw new IllegalArgumentException();
+            name = s;
+        }
+
+        @Override
+        public int compareTo(@NotNull Object o)
+        {
+            Name n = (Name)o;
+            if (name.compareTo(n.name) != 0)
+                return name.compareTo(n.name)/Math.abs(name.compareTo(n.name));
+            return 0;
+        }
+
+        @Override
+        public String toString()
+        {
+            return name;
+        }
+    }
+
+    static class Address implements Comparable
+    {
+        String street;
+        int building;
+
+        Address(String addr)
+        {
+            String[] strings = addr.split(" ");
+            if (strings.length != 2) throw new IllegalArgumentException();
+
+            street = strings[0];
+            building = Integer.parseInt(strings[1]);
+            if (building < 1) throw new IllegalArgumentException();
+        }
+
+        @Override
+        public int compareTo(@NotNull Object o)
+        {
+            Address a = (Address) o;
+
+            if (street.compareTo(a.street) != 0)
+                return street.compareTo(a.street)/Math.abs(street.compareTo(a.street));
+            else
+                if (building != a.building)
+                    return Integer.compare(building, a.building);
+                else
+                    return 0;
+        }
+
+        @Override
+        public String toString()
+        {
+            return street + " " + building;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            return street.equals(((Address)o).street) && building == ((Address)o).building;
+        }
     }
 
     /**
