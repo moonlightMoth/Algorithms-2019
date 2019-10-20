@@ -2,7 +2,11 @@ package lesson2;
 
 import kotlin.NotImplementedError;
 import kotlin.Pair;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings("unused")
@@ -30,9 +34,41 @@ public class JavaAlgorithms {
      * Например, для приведённого выше файла результат должен быть Pair(3, 4)
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
+     *
      */
-    static public Pair<Integer, Integer> optimizeBuyAndSell(String inputName) {
-        throw new NotImplementedError();
+    static public Pair<Integer, Integer> optimizeBuyAndSell(String inputName) throws IOException
+    {
+        List<Integer> list = new ArrayList<>();
+
+        File file = new File(inputName);
+        try (BufferedReader br =
+                     new BufferedReader(new InputStreamReader(new FileInputStream(file))))
+        {
+            String s;
+
+            while ((s = br.readLine()) != null)
+            {
+                list.add(Integer.parseInt(s));
+            }
+        }
+
+        int upperBound = 0;
+        int bottomBound = 0;
+
+        //O(n^2)
+        for (int i = 0; i < list.size()-1; i++)
+        {
+            for (int j = i+1; j < list.size(); j++)
+            {
+                if (list.get(i) - list.get(j) < list.get(upperBound) - list.get(bottomBound))
+                {
+                    upperBound = i;
+                    bottomBound = j;
+                }
+            }
+        }
+
+        return new Pair<>(upperBound+1, bottomBound+1);
     }
 
     /**
@@ -84,8 +120,9 @@ public class JavaAlgorithms {
      * Общий комментарий: решение из Википедии для этой задачи принимается,
      * но приветствуется попытка решить её самостоятельно.
      */
-    static public int josephTask(int menNumber, int choiceInterval) {
-        throw new NotImplementedError();
+    static public int josephTask(int menNumber, int choiceInterval)
+    {
+        throw new NotImplementedException();
     }
 
     /**
