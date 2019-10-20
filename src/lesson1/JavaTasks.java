@@ -352,9 +352,41 @@ public class JavaTasks {
      * 24.7
      * 99.5
      * 121.3
+     *
+     * O(n) - counting sort
      */
-    static public void sortTemperatures(String inputName, String outputName) {
-        throw new NotImplementedError();
+    static public void sortTemperatures(String inputName, String outputName) throws IOException
+    {
+        final int arrayOffset = 2730;
+        final int arrayLength = 7731;
+        int[] arr = new int[arrayLength];
+
+        File file = new File(inputName);
+        try (BufferedReader br =
+                     new BufferedReader(new InputStreamReader(new FileInputStream(file))))
+        {
+            String s;
+
+            while ((s = br.readLine()) != null)
+            {
+                arr[(int)(Float.parseFloat(s)*10)+arrayOffset]++;
+            }
+        }
+
+        file = new File(outputName);
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file)))
+        {
+            for (int i = 0; i < arrayLength; i++)
+            {
+                for (int j = 0; j < arr[i]; j++)
+                {
+                    bw.append(String.valueOf(((float)(i-arrayOffset))/10));
+                    bw.newLine();
+                }
+            }
+            bw.flush();
+        }
     }
 
     /**

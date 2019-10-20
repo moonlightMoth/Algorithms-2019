@@ -172,6 +172,16 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         } finally {
             File("temp.txt").delete()
         }
+        try {
+            assertThrows<IllegalArgumentException> { sortTemperatures("input/temp_in2.txt", "temp.txt") }
+        } finally {
+            File("temp.txt").delete()
+        }
+        try {
+            assertThrows<IOException> { sortTemperatures("input/temp_in3.txt", "temp.txt") }
+        } finally {
+            File("temp.txt").delete()
+        }
 
         fun testGeneratedTemperatures(size: Int): PerfResult<Unit> {
             try {
