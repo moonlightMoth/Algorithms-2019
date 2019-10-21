@@ -122,7 +122,13 @@ public class JavaAlgorithms {
      */
     static public int josephTask(int menNumber, int choiceInterval)
     {
-        throw new NotImplementedException();
+        int last = 1;
+
+        for (int i = 2; i <= menNumber; i++)
+        {
+            last = (last + choiceInterval - 1) % i + 1;
+        }
+        return last;
     }
 
     /**
