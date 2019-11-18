@@ -1,8 +1,10 @@
 package lesson3
 
 import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
 import java.util.*
+import kotlin.ConcurrentModificationException
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -197,4 +199,29 @@ class BinaryTreeTest {
     fun testIteratorRemoveJava() {
         testIteratorRemove { createJavaTree() }
     }
+
+    private fun testIteratorRemoveFailFast(create: () -> CheckableSortedSet<Int>) {
+        val random = Random()
+        for (iteration in 1..100) {
+            val list = mutableListOf<Int>()
+            for (i in 1..5) {
+                list.add(random.nextInt(100))
+            }
+            val binarySet = create()
+            for (element in list) {
+                binarySet += element
+            }
+            val iterator = binarySet.iterator()
+            iterator.next()
+            binarySet.add(144)
+            assertThrows<ConcurrentModificationException> { iterator.remove() }
+        }
+    }
+
+    @Test
+    @Tag("Hard")
+    fun testIteratorRemoveJavaFailFast() {
+        testIteratorRemoveFailFast { createJavaTree() }
+    }
+
 }
