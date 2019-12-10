@@ -1,12 +1,12 @@
 package lesson5;
 
 import kotlin.NotImplementedError;
+import lesson5.impl.GraphBuilder;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @SuppressWarnings("unused")
-public class JavaGraphTasks {
+public class    JavaGraphTasks {
     /**
      * Эйлеров цикл.
      * Средняя
@@ -33,8 +33,77 @@ public class JavaGraphTasks {
      * Справка: Эйлеров цикл -- это цикл, проходящий через все рёбра
      * связного графа ровно по одному разу
      */
-    public static List<Graph.Edge> findEulerLoop(Graph graph) {
-        throw new NotImplementedError();
+    public static List<Graph.Edge> findEulerLoop(Graph graph)
+    {
+        ArrayList<Graph.Edge> result = new ArrayList<>(Collections.emptyList());
+        Set<Graph.Edge> edges = graph.getEdges();
+        int visitedCount = 0;
+
+        if (edges.size() > 2)
+        {
+            Stack<Graph.Vertex> vStack = new Stack<>();
+            Stack<Graph.Edge> eStack = new Stack<>();
+
+            vStack.push(edges.iterator().next().getBegin());
+            Map<Graph.Edge, Boolean> visited = new HashMap<>();
+
+            for (Graph.Edge e : edges)
+            {
+                visited.put(e, false);
+            }
+
+            Graph.Vertex v;
+
+            while (!vStack.isEmpty())
+            {
+                v = vStack.peek();
+                Map<Graph.Vertex, Graph.Edge> connections = graph.getConnections(v);
+
+                for (Map.Entry<Graph.Vertex, Graph.Edge> entry : connections.entrySet())
+                {
+                    Graph.Edge edge = entry.getValue();
+
+                    if (!visited.get(edge))
+                    {
+                        vStack.push(entry.getKey());
+                        eStack.push(edge);
+                        visited.put(edge, true);
+                        visitedCount++;
+                        break;
+                    }
+                }
+
+                if (v.equals(vStack.peek()))
+                {
+                    if (!eStack.isEmpty())
+                    {
+                        Graph.Edge popped = eStack.pop();
+
+                        if (result.isEmpty() || connected(popped, result.get(result.size() - 1)))
+                            result.add(popped);
+                        else
+                            break;
+                    }
+                    vStack.pop();
+                }
+            }
+
+            if (visitedCount != edges.size() || !connected(result.get(0), result.get(result.size() - 1)))
+            {
+                result.clear();
+            }
+        }
+        return result;
+    }
+
+    private static boolean connected(Graph.Edge first, Graph.Edge second)
+    {
+        Graph.Vertex fB = first.getBegin();
+        Graph.Vertex fE = first.getEnd();
+        Graph.Vertex sB = second.getBegin();
+        Graph.Vertex sE = second.getEnd();
+
+        return fB.equals(sB) || fB.equals(sE) || fE.equals(sE) || fE.equals(sB);
     }
 
     /**
@@ -65,8 +134,31 @@ public class JavaGraphTasks {
      * |
      * J ------------ K
      */
-    public static Graph minimumSpanningTree(Graph graph) {
-        throw new NotImplementedError();
+    public static Graph minimumSpanningTree(Graph graph)
+    {
+        Set<Graph.Vertex> notVisited = new HashSet<>(graph.getVertices());
+        GraphBuilder gb = new GraphBuilder();
+
+        for (Graph.Vertex v: graph.getVertices())
+        {
+            if (notVisited.isEmpty())
+                continue;
+
+            gb.addVertex(v.getName());
+            notVisited.remove(v);
+            for (Graph.Vertex neighbour: graph.getNeighbors(v))
+            {
+                if ((notVisited.contains(neighbour) || graph.getConnections(v).size() == 1)
+                        && graph.getConnection(v, neighbour) != null && !v.equals(neighbour))
+                {
+                    gb.addVertex(neighbour.getName());
+                    gb.addConnection(v, neighbour, 1);
+                    notVisited.remove(neighbour);
+                }
+            }
+
+        }
+        return gb.build();
     }
 
     /**
