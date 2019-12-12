@@ -32,6 +32,9 @@ public class    JavaGraphTasks {
      *
      * Справка: Эйлеров цикл -- это цикл, проходящий через все рёбра
      * связного графа ровно по одному разу
+     *
+     *
+     * O(n), n - edges
      */
     public static List<Graph.Edge> findEulerLoop(Graph graph)
     {
@@ -78,7 +81,6 @@ public class    JavaGraphTasks {
                     if (!eStack.isEmpty())
                     {
                         Graph.Edge popped = eStack.pop();
-
                         if (result.isEmpty() || connected(popped, result.get(result.size() - 1)))
                             result.add(popped);
                         else
@@ -98,12 +100,13 @@ public class    JavaGraphTasks {
 
     private static boolean connected(Graph.Edge first, Graph.Edge second)
     {
-        Graph.Vertex fB = first.getBegin();
-        Graph.Vertex fE = first.getEnd();
-        Graph.Vertex sB = second.getBegin();
-        Graph.Vertex sE = second.getEnd();
+        Graph.Vertex firstBegin = first.getBegin();
+        Graph.Vertex firstEnd = first.getEnd();
+        Graph.Vertex secondBegin = second.getBegin();
+        Graph.Vertex secondEnd = second.getEnd();
 
-        return fB.equals(sB) || fB.equals(sE) || fE.equals(sE) || fE.equals(sB);
+        return firstBegin.equals(secondBegin) || firstBegin.equals(secondEnd) ||
+                firstEnd.equals(secondEnd) || firstEnd.equals(secondBegin);
     }
 
     /**
@@ -133,6 +136,9 @@ public class    JavaGraphTasks {
      * E    F    I
      * |
      * J ------------ K
+     *
+     *
+     * O(n), n - vertices
      */
     public static Graph minimumSpanningTree(Graph graph)
     {
@@ -186,10 +192,96 @@ public class    JavaGraphTasks {
      * Если на входе граф с циклами, бросить IllegalArgumentException
      *
      * Эта задача может быть зачтена за пятый и шестой урок одновременно
+     *
+     *
+     * Bron–Kerbosch algorithm - O(3^(n/3))
      */
-    public static Set<Graph.Vertex> largestIndependentVertexSet(Graph graph) {
-        throw new NotImplementedError();
+    public static Set<Graph.Vertex> largestIndependentVertexSet(Graph graph)
+    {
+        for (Graph.Vertex vertex: graph.getVertices())
+        {
+            if (isCyclic(graph, vertex, new HashSet<>(), null))
+                throw new IllegalArgumentException();
+        }
+
+        List<Set<Graph.Vertex>> compsubs = new ArrayList<>();
+        Set<Graph.Vertex> compsub;
+        Set<Graph.Vertex> candidates;
+
+        for (Graph.Vertex v: graph.getVertices())
+        {
+            compsub = new HashSet<>();
+            compsub.add(v);
+            candidates = new HashSet<>(graph.getVertices());
+            candidates.remove(v);
+            candidates.removeAll(graph.getNeighbors(v));
+
+            compsubs.add(extend(graph, compsub, candidates));
+        }
+
+        Set<Graph.Vertex> result = new HashSet<>();
+
+        for (Set<Graph.Vertex> comp: compsubs)
+        {
+            if (comp.size() > result.size())
+                result = comp;
+        }
+
+        return result;
     }
+
+    private static Set<Graph.Vertex> extend(Graph graph,
+                                            Set<Graph.Vertex> compsub,
+                                            Set<Graph.Vertex> candidates)
+    {
+        if (candidates.iterator().hasNext())
+        {
+            Graph.Vertex v = candidates.iterator().next();
+            compsub.add(v);
+            Set<Graph.Vertex> newCandidates = formNewSet(graph, candidates, v);
+
+            if (newCandidates.isEmpty())
+            {
+                return compsub;
+            }
+            else
+                return extend(graph, compsub, newCandidates);
+        }
+        return compsub;
+    }
+
+    private static Set<Graph.Vertex> formNewSet(Graph graph,
+                                                Set<Graph.Vertex> set,
+                                                Graph.Vertex v)
+    {
+
+        Set<Graph.Vertex> newSet = new HashSet<>(set);
+        newSet.removeAll(graph.getNeighbors(v));
+        newSet.remove(v);
+
+        return newSet;
+    }
+
+    private static int passed;
+
+    private static boolean isCyclic(Graph graph,
+                               Graph.Vertex start,
+                               Set<Graph.Vertex> visited,
+                               Graph.Vertex parent)
+    {
+        visited.add(start);
+        Set<Graph.Vertex> neighbours = graph.getNeighbors(start);
+        for (Graph.Vertex n: neighbours)
+        {
+            if (!visited.contains(n) || parent == null)
+                return isCyclic(graph, n, visited, start);
+            else if (!n.equals(parent))
+                return true;
+        }
+        return false;
+    }
+
+
 
     /**
      * Наидлиннейший простой путь.
