@@ -18,8 +18,80 @@ public class JavaDynamicTasks {
      * Если есть несколько самых длинных общих подпоследовательностей, вернуть любую из них.
      * При сравнении подстрок, регистр символов *имеет* значение.
      */
-    public static String longestCommonSubSequence(String first, String second) {
-        throw new NotImplementedError();
+    public static String longestCommonSubSequence(String first, String second)
+    {
+        int fLeng = first.length();
+        int sLeng = second.length();
+
+        if (fLeng < 1 || sLeng < 1)
+            return "";
+        if (fLeng == 1 && second.contains(first))
+            return first;
+        else if (fLeng == 1 && !second.contains(first))
+            return "";
+        if (sLeng == 1 && first.contains(second))
+            return second;
+        else if (sLeng == 1 && !first.contains(second))
+            return "";
+
+        int[][] m = new int[fLeng][sLeng];
+
+        for (int i = 1; i < sLeng; i++)
+        {
+            if (first.charAt(0) == second.charAt(i) || m[0][i-1] == 1)
+                m[0][i] = 1;
+        }
+        for (int i = 1; i < fLeng; i++)
+        {
+            if (second.charAt(0) == first.charAt(i) || m[i-1][0] == 1)
+                m[i][0] = 1;
+        }
+
+        int prevV;
+        int prevH;
+        int prevD;
+
+        for (int i = 1; i < fLeng; i++)
+        {
+            for (int j = 1; j < sLeng; j++)
+            {
+                prevV = m[i - 1][j];
+                prevH = m[i][j - 1];
+                prevD = m[i - 1][j - 1];
+
+                if (first.charAt(i) == second.charAt(j))
+                    m[i][j] = prevD + 1;
+                else
+                    m[i][j] = Math.max(prevH, prevV);
+            }
+        }
+
+        int l = m[fLeng - 1][sLeng - 1];
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = fLeng - 1; i >= 0; i--)
+        {
+            for (int j = sLeng - 1; j >= 0; j--)
+            {
+                if (m[i][j] == l
+                        && (l == 1
+                        && (j == 0 && i == 0
+                        || j == 0 && m[i - 1][j] == 0
+                        || i == 0 && m[i][j - 1] == 0)
+                        || i > 0 && j > 0
+                        && m[i][j] != m[i - 1][j]
+                        && m[i][j] != m[i][j - 1]
+                        && m[i][j] == m[i - 1][j - 1] + 1))
+                {
+                    l--;
+                    sb.append(first.charAt(i));
+                    i--;
+                }
+                if (l == 0)
+                    break;
+            }
+        }
+        return sb.toString();
     }
 
     /**
